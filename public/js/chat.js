@@ -13,7 +13,7 @@ const txtMensaje = document.querySelector('#txtMensaje');
 const ulUsuarios = document.querySelector('#ulUsuarios');
 const ulMensajes = document.querySelector('#ulMensajes');
 const btnSalir   = document.querySelector('#btnSalir');
-
+const ulMensajesPrivados = document.querySelector('#ulMensajesPrivados');
 
 
 
@@ -55,14 +55,12 @@ const conectarSocket = async() => {
         console.log('Sockets Offline')
     });
 
-    socket.on('recibir-mensajes', () => {
-        //TODO;
-    });
+    socket.on('recibir-mensajes', dibujarMensajes);
 
     socket.on('usuarios-activos', dibujarUsuarios);
 
-    socket.on('mensaje-privado', () => {
-        //TODO;
+    socket.on('mensaje-privado', (payload) => {
+        console.log('Privado:', payload);
     });
 
 }
@@ -84,6 +82,26 @@ const dibujarUsuarios = ( usuarios = []) => {
     ulUsuarios.innerHTML = usersHtml;
 }
 
+const dibujarMensajes = ( mensajes = []) => {
+    let mensajesHTML = '';
+    mensajes.forEach(({nombre, mensaje}) => {
+
+        mensajesHTML += `
+            <li>
+                <p>
+                    <span class="text-primary">${nombre}: </span>
+                    <span >${mensaje}</span>
+                </p>
+            </li>
+        `;
+    });
+
+    ulMensajes.innerHTML = mensajesHTML;
+}
+
+
+
+
 const main = async() => {
 
     //validar JWT
@@ -92,6 +110,23 @@ const main = async() => {
 
 }
 
+txtMensaje.addEventListener('keyup', ({keyCode}) => {
+
+    const mensaje = txtMensaje.value;
+    const uid = txtUid.value;
+
+    if( keyCode !== 13){
+        return;
+    };
+
+    if (mensaje.length === 0){
+        return;
+    };
+
+    socket.emit('enviar-mensaje', {mensaje, uid});
+
+    txtMensaje.value = '';
+})
 
 
 
